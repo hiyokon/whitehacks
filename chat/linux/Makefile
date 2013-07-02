@@ -15,4 +15,6 @@ install:	$(PROGRAM)
 	chown root:root $(PROGRAM)
 	chmod 4755 $(PROGRAM)
 	echo "alias c=`pwd`/c.sh" >> /etc/bashrc
+	touch /tmp/chat.log
+	chmod +r+w /tmp/chat.log
 

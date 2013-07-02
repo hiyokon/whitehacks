@@ -3,6 +3,9 @@
 DEFAULT_LOG=/tmp/chat.log
 LOG=$DEFAULT_LOG
 LINENUM=$(stty size|cut -d ' ' -f 1)
+if [[ "$CHAT_NAME" = "" ]]; then
+  CHAT_NAME=$USER
+fi
 
 trap 'quit;exit 0;' 2 3 9 15
 trap 'notify' 10
@@ -15,14 +18,14 @@ function quit {
 
 function t {
   if [[ "$1" != "" ]]; then
-    echo -n "[$(date '+%H:%M:%S')] $(printf '%10s' $USER): " >> $LOG
+    echo -n "[$(date '+%H:%M:%S')] $(printf '%10s' $CHAT_NAME): " >> $LOG
     echo "$1" >> $LOG
     sendsig
   fi
 }
 function t_d {
   if [[ "$1" != "" ]]; then
-    echo -n "[$(date '+%H:%M:%S')] $(printf '%10s' $USER): " >> $DEFAULT_LOG
+    echo -n "[$(date '+%H:%M:%S')] $(printf '%10s' $CHAT_NAME): " >> $DEFAULT_LOG
     echo "$1" >> $DEFAULT_LOG
     sendsig
   fi
@@ -59,7 +62,7 @@ while ((1))
 do
   while read -e line
   do
-    case "$line"
+    case "$line" in
     "q") quit; exit 0 ;;
     esac
 
