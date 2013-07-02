@@ -15,14 +15,14 @@ function quit {
 
 function t {
   if [[ "$1" != "" ]]; then
-    echo -n "$(date '+%H:%M:%S') $(printf "%10s" $USER): " >> $LOG
+    echo -n "[$(date '+%H:%M:%S')] $(printf '%10s' $USER): " >> $LOG
     echo "$1" >> $LOG
     sendsig
   fi
 }
 function t_d {
   if [[ "$1" != "" ]]; then
-    echo -n "$(date '+%H:%M:%S') $(printf "%10s" $USER): " >> $DEFAULT_LOG
+    echo -n "[$(date '+%H:%M:%S')] $(printf '%10s' $USER): " >> $DEFAULT_LOG
     echo "$1" >> $DEFAULT_LOG
     sendsig
   fi
