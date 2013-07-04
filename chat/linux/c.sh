@@ -1,10 +1,16 @@
 #!/bin/bash
 
-DEFAULT_LOG=/tmp/chat.log
-LOG=$DEFAULT_LOG
+LOG_BASE=/tmp/
+DEFAULT_LOG=chat.log
+LOG=$LOG_BASE$DEFAULT_LOG
 LINENUM=$(stty size|cut -d ' ' -f 1)
 if [[ "$CHAT_NAME" = "" ]]; then
   CHAT_NAME=$USER
+fi
+if [[ "$CHAT_ICON" = "" ]]; then
+  NOTIFY_COM="notify-send"
+else
+  NOTIFY_COM="notify-send -i $CHAT_ICON"
 fi
 
 trap 'quit;exit 0;' 2 3 9 15
@@ -25,8 +31,8 @@ function t {
 }
 function t_d {
   if [[ "$1" != "" ]]; then
-    echo -n "[$(date '+%H:%M:%S')] $(printf '%10s' $CHAT_NAME): " >> $DEFAULT_LOG
-    echo "$1" >> $DEFAULT_LOG
+    echo -n "[$(date '+%H:%M:%S')] $(printf '%10s' $CHAT_NAME): " >> $LOG_BASE$DEFAULT_LOG
+    echo "$1" >> $LOG_BASE$DEFAULT_LOG
     sendsig
   fi
 }
@@ -43,16 +49,21 @@ function notify {
   local NBODY=$(echo $T|cut -d ' ' -f '3-')
 
   if [[ "$NTITLE" != "${USER}:" ]]; then
-    dbus-launch notify-send $NTITLE $NBODY &
+    if [[ "$(echo $NBODY|cut -d ' ' -f 1)" = "@${CHAT_NAME}" ]]; then
+      NTITLE="Reply from $NTITLE"
+      dbus-launch $NOTIFY_COM -u critical "$NTITLE" "$NBODY" &
+    else
+      dbus-launch $NOTIFY_COM "$NTITLE" "$NBODY" &
+    fi
   fi
 }
 
 
 if [[ "$1" != "" ]]; then
-  LOG=/tmp/$1.log
+  LOG=$LOG_BASE$1.log
   if [[ ! -f $LOG ]]; then
     touch $LOG
-    chmod +r+w $LOG
+    chmod a+rw $LOG
     t_d "== チャットルーム '$1' を作成しました =="
   fi
 fi
@@ -63,7 +74,9 @@ do
   while read -e line
   do
     case "$line" in
-    "q") quit; exit 0 ;;
+    "q") quit;clear;exit 0 ;;
+    "exit") quit;clear;echo Bye!;exit 0 ;;
+    "l") quit;less -R +G $LOG;l;continue ;;
     esac
 
     t "$line"
